@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const createError = require('http-errors');
 const xssClean = require('xss-clean');
 const rateLimit = require('express-rate-limit');
+const userRouter = require("./routers/userRouter");
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 // app.use(express.json());
 // app.use(express.urlencoded({extended:true}));
+
+app.use("/api/users",userRouter)
 
 
 // const isLoggedIn = (req, res, next) =>{
@@ -39,12 +42,9 @@ app.get('/test', (req, res)=>{
         message:"api testing is working fine"
     })
 })
-app.get('/api/users', (req, res)=>{
-    console.log(req.body.id)
-    res.status(200).send({
-        message:"user profile is returned"
-    })
-})
+
+
+
 
 //client error handling
 app.use((req,res,next)=>{
