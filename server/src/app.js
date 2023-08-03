@@ -5,6 +5,7 @@ const createError = require('http-errors');
 const xssClean = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 const userRouter = require("./routers/userRouter");
+const seedRouter = require("./routers/seedRouter");
 
 const app = express();
 
@@ -22,7 +23,8 @@ app.use(bodyParser.urlencoded({extended:true}));
 // app.use(express.json());
 // app.use(express.urlencoded({extended:true}));
 
-app.use("/api/users",userRouter)
+app.use("/api/users",userRouter);
+app.use("/api/seed",seedRouter);
 
 
 // const isLoggedIn = (req, res, next) =>{
