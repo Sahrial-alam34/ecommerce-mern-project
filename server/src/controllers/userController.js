@@ -1,13 +1,49 @@
 const createError = require('http-errors')
+const User = require('../model/userModel');
+const { successResponse } = require('./responseController');
+// const successResponse = require('../')
 
 
-
-const getUsers = (req, res,next)=>{
-   // console.log(req.body.id)
+const getUsers = async (req, res, next) => {
+    // console.log(req.body.id)
     try {
-        res.status(200).send({
-            message:"users were returned",
-            
+
+        const search = req.query.search || "";
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 1;
+
+        const searchRegExp = new RegExp('.*' + search + ".*", 'i')
+        const filter = {
+            isAdmin: { $ne: true },
+            $or: [
+                { name: { $regex: searchRegExp } },
+                { email: { $regex: searchRegExp } },
+                { phone: { $regex: searchRegExp } },
+            ]
+        }
+
+        const options = { password: 0 }
+
+        const users = await User.find(filter, options)
+            .limit(limit)
+            .skip((page - 1) * limit)
+
+        const count = await User.find(filter).countDocuments();
+        if (!users) throw createError(404, "no users found");
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'users were returned successfully',
+            payload: {
+                users,
+                pagination: {
+                    totalPage: Math.ceil(count / limit),
+                    currentPage: page,
+                    previousPage: page - 1 > 0 ? page - 1 : null,
+                    nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null
+
+                }
+
+            } 
         })
     } catch (error) {
         next(error)
