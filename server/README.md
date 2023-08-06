@@ -19,3 +19,13 @@
 15. create seed route for testing
 16. GET /api/users --> isAdmin --> getAllUsers --> searchByName + pagination functionality
 17. responseHandler  controller for error or success
+18. GET/ api/users/:id --> get a single user by id
+19. How to create services in the backend
+20. DELETE /api/users/:id --> delete a single user by id
+21. Refactoring & reusability, dynamic
+22. deleteImage helper
+23. POST /api/users/register --> process the registration
+24. POST /api/users/verify --> verify + register into database
+24. add express validator middleware
+25.  add multer middleware for file upload 
+26. PUT /api/users/:id --> update a single user by id

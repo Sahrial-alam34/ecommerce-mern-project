@@ -1,7 +1,11 @@
-const createError = require('http-errors')
+const createError = require('http-errors');
+const fs = require('fs').promises;
 const User = require('../model/userModel');
 const { successResponse } = require('./responseController');
-// const successResponse = require('../')
+
+const { findWithId } = require('../services/findItem');
+const deleteImage = require('../helper/deleteImage');
+
 
 
 const getUsers = async (req, res, next) => {
@@ -10,7 +14,7 @@ const getUsers = async (req, res, next) => {
 
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 1;
+        const limit = Number(req.query.limit) || 5;
 
         const searchRegExp = new RegExp('.*' + search + ".*", 'i')
         const filter = {
@@ -43,11 +47,104 @@ const getUsers = async (req, res, next) => {
 
                 }
 
-            } 
+            }
         })
     } catch (error) {
         next(error)
     }
 }
 
-module.exports = getUsers;
+const getUserById = async (req, res, next) => {
+    // console.log(req.body.id)
+    try {
+
+        const id = req.params.id;
+
+        const options = { password: 0 }
+        const user = await findWithId(User, id, options)
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'user was returned successfully',
+            payload: {
+                user
+            }
+        })
+    } catch (error) {
+
+        next(error)
+    }
+}
+const deleteUserById = async (req, res, next) => {
+    // console.log(req.body.id)
+    try {
+
+        const id = req.params.id;
+
+        const options = { password: 0 }
+        const user = await findWithId(User, id, options)
+
+
+        const userImagePath = user.image;
+        deleteImage(userImagePath)
+        // fs.access(userImagePath)
+        // .then(()=>  fs.unlink(userImagePath))
+        // .then(()=>   console.log("user image was deleted"))
+        // .catch((err)=>console.error('user image does not exist'))
+        // fs.access(userImagePath, (err) => {
+        //     if (err) {
+        //         console.error('user image does not exist')
+        //     }
+        //     else{
+        //         fs.unlink(userImagePath, (err)=>{
+        //             if(err){
+        //                 throw err;
+        //             }
+        //             console.log("user image was deleted")
+        //         })
+        //     }
+
+        // })
+        await User.findByIdAndDelete({
+            _id: id,
+            isAdmin: false
+        })
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'user was delete successfully',
+
+        })
+    } catch (error) {
+
+        next(error)
+    }
+}
+const processRegister = async (req, res, next) => {
+    // console.log(req.body.id)
+    try {
+
+        const { name, email, password, phone, address}= req.body;
+
+        const userExists = await User.exists({email: email})
+        if(userExists){
+            throw createError(409, 'User with this email already exist. Please Login ')
+        }
+        const newUser = {
+            name, email, password, phone, address
+        }
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'user was created successfully',
+            payload:{
+                newUser
+            }
+
+        })
+
+    } catch (error) {
+
+        next(error)
+    }
+}
+
+module.exports = { getUsers, getUserById, deleteUserById, processRegister };
