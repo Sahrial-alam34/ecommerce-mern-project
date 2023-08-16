@@ -5,6 +5,8 @@ const { successResponse } = require('./responseController');
 
 const { findWithId } = require('../services/findItem');
 const deleteImage = require('../helper/deleteImage');
+const { createJSONWebToken } = require('../helper/jsonwebtoken');
+const { jwtActivationKey } = require('../secret');
 
 
 
@@ -129,14 +131,21 @@ const processRegister = async (req, res, next) => {
         if(userExists){
             throw createError(409, 'User with this email already exist. Please Login ')
         }
-        const newUser = {
-            name, email, password, phone, address
-        }
+
+        //create jwt
+        const token = createJSONWebToken({name, email, password, phone, address},jwtActivationKey, '10m')
+        
+        
+        //prepare email
+
+
+        //send email with nodemailer
+
         return successResponse(res, {
             statusCode: 200,
             message: 'user was created successfully',
             payload:{
-                newUser
+                token
             }
 
         })
